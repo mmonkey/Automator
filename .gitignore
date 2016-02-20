@@ -1,5 +1,5 @@
-/gradle
-/.idea
-/.gradle
-/Automator.iml
-/build
+/.gradle/
+/.idea/
+/build/
+/gradle/
+Automator.iml

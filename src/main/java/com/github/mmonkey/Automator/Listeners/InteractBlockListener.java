@@ -1,6 +1,7 @@
 package com.github.mmonkey.Automator.Listeners;
 
 import com.github.mmonkey.Automator.DefaultToolMapping;
+import com.github.mmonkey.Automator.Services.ExchangeSlotItemsService;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
@@ -15,11 +16,10 @@ import org.spongepowered.api.item.inventory.Slot;
 import org.spongepowered.api.item.inventory.entity.Hotbar;
 import org.spongepowered.api.item.inventory.property.SlotIndex;
 import org.spongepowered.api.item.inventory.type.GridInventory;
-import org.spongepowered.api.text.Text;
 
 import java.util.Optional;
 
-public class InteractWithBlock {
+public class InteractBlockListener {
 
     @Listener
     public void onPrimaryClickBlock(InteractBlockEvent.Primary event) {
@@ -55,12 +55,11 @@ public class InteractWithBlock {
             }
         }
 
-        Slot activeHotbarSlot = null;
+        Slot selectedHotbarSlot = null;
         Inventory hotbarInventory = player.getInventory().query(Hotbar.class);
         if (hotbarInventory instanceof Hotbar) {
             Hotbar hotbar = (Hotbar) hotbarInventory;
-            int activeIndex = hotbar.getSelectedSlotIndex();
-            activeHotbarSlot = getActiveHotbarSlot(hotbar, activeIndex);
+            selectedHotbarSlot = getSelectedHotbarSlot(hotbar);
 
             // If there is a compatible tool already in the hotbar, set selected index to that item's slot index
             int compatibleIndex = getCompatibleToolHotbarIndex(hotbar, defaultMappings);
@@ -78,8 +77,10 @@ public class InteractWithBlock {
             for (Slot slot : gridSlots) {
                 for (ItemType tool : defaultMappings) {
                     if (slot.contains(tool)) {
-                        swapItemInHand(player, activeHotbarSlot, slot);
+
+                        new ExchangeSlotItemsService(selectedHotbarSlot, slot).process();
                         return;
+
                     }
                 }
             }
@@ -87,21 +88,17 @@ public class InteractWithBlock {
 
     }
 
-    private Slot getActiveHotbarSlot(Hotbar hotbar, int activeIndex) {
+    /**
+     * Return's the Slot of the selected slot index
+     *
+     * @param hotbar Hotbar
+     * @return Slot
+     */
+    private Slot getSelectedHotbarSlot(Hotbar hotbar) {
 
-        Iterable<Slot> hotbarSlots = hotbar.slots();
-
-        int index = 0;
-        for (Slot slot : hotbarSlots) {
-
-            if (activeIndex == index) {
-                return slot;
-            }
-
-            index++;
-        }
-
-        return null;
+        int activeIndex = hotbar.getSelectedSlotIndex();
+        Optional<Slot> slot = hotbar.getSlot(new SlotIndex(activeIndex));
+        return slot.isPresent() ? slot.get() : null;
 
     }
 
@@ -146,6 +143,26 @@ public class InteractWithBlock {
         if (itemInHand != null) {
             toolSlot.offer(itemInHand);
         }
+    }
+
+    private void swapSlotItems(Slot slotA, Slot slotB) {
+
+        ItemStack itemA = slotA.peek().isPresent() ? slotA.poll().get() : null;
+        ItemStack itemB = slotB.peek().isPresent() ? slotB.poll().get() : null;
+
+        if (itemA != null) {
+            slotA.clear();
+        }
+
+        if (itemB != null) {
+            slotB.clear();
+            slotA.offer(itemB);
+        }
+
+        if (itemA != null) {
+            slotB.offer(itemA);
+        }
+
     }
 
 }

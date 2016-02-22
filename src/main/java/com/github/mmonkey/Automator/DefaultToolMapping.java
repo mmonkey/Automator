@@ -17,7 +17,7 @@ public class DefaultToolMapping {
         return null;
     }
 
-    private static Map<BlockType, ItemType[]> defaultMappings = new HashMap<>();
+    private static Map<BlockType, ItemType[]> defaultMappings = new HashMap<BlockType, ItemType[]>();
 
     private static ItemType[] axes = {ItemTypes.WOODEN_AXE, ItemTypes.STONE_AXE, ItemTypes.IRON_AXE, ItemTypes.GOLDEN_AXE, ItemTypes.DIAMOND_AXE};
     private static ItemType[] pickaxes = {ItemTypes.WOODEN_PICKAXE, ItemTypes.STONE_PICKAXE, ItemTypes.IRON_PICKAXE, ItemTypes.GOLDEN_PICKAXE, ItemTypes.DIAMOND_PICKAXE};

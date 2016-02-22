@@ -6,14 +6,10 @@ import org.spongepowered.api.item.inventory.Slot;
 public class ExchangeSlotItemsService {
 
     private Slot slotA;
-
     private Slot slotB;
 
-    public void setSlotA(Slot slotA) {
+    public ExchangeSlotItemsService(Slot slotA, Slot slotB) {
         this.slotA = slotA;
-    }
-
-    public void setSlotB(Slot slotB) {
         this.slotB = slotB;
     }
 
@@ -22,8 +18,8 @@ public class ExchangeSlotItemsService {
      */
     public void process() {
 
-        ItemStack itemA = this.slotA.peek().isPresent() ? this.slotA.poll().get() : null;
-        ItemStack itemB = this.slotB.peek().isPresent() ? this.slotB.poll().get() : null;
+        ItemStack itemA = slotA.peek().isPresent() ? slotA.poll().get() : null;
+        ItemStack itemB = slotB.peek().isPresent() ? slotB.poll().get() : null;
 
         if (itemA != null) {
             this.slotA.clear();
@@ -37,13 +33,5 @@ public class ExchangeSlotItemsService {
         if (itemA != null) {
             this.slotB.offer(itemA);
         }
-    }
-
-    public ExchangeSlotItemsService() {
-    }
-
-    public ExchangeSlotItemsService(Slot slotA, Slot slotB) {
-        this.slotA = slotA;
-        this.slotB = slotB;
     }
 }

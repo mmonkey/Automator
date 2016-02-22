@@ -9,8 +9,6 @@ import java.io.IOException;
 public class DefaultConfig extends Config {
 
     public static final String CONFIG_VERSION = "version";
-    public static final String DATABASE_VERSION = "databaseVersion";
-    public static final String DATABASE = "Database";
     public static final String COMMANDS = "Commands";
 
     @Override
@@ -48,8 +46,6 @@ public class DefaultConfig extends Config {
         }
 
         get().getNode(CONFIG_VERSION).setValue(0);
-        get().getNode(DATABASE_VERSION).setValue(0);
-        get().getNode(DATABASE, "webserver").setValue(false);
         get().getNode(COMMANDS, "tool").setValue(true);
         save();
 

@@ -1,20 +1,25 @@
 package com.github.mmonkey.Automator.Commands;
 
 import com.github.mmonkey.Automator.Automator;
-import com.github.mmonkey.Automator.Dams.PlayerCommandSettingsDam;
+import com.github.mmonkey.Automator.Models.CommandSetting;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
-public class ToolCommand implements CommandExecutor {
+public class ToolCommand extends CommandAbstract {
 
-    public static final int COMMAND_TYPE = 1;
+    public ToolCommand(Automator plugin) {
+        super(plugin);
+    }
 
-    private PlayerCommandSettingsDam playerCommandSettingsDam;
+    @Override
+    protected String getCommandIdentifier() {
+        return "tool";
+    }
 
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 
@@ -24,21 +29,27 @@ public class ToolCommand implements CommandExecutor {
 
         Player player = (Player) src;
 
-        boolean isEnabled = this.playerCommandSettingsDam.isCommandEnabled(player, player.getWorld(), COMMAND_TYPE);
-        String setting = isEnabled ? "off" : "on";
+        CommandSetting setting = this.getCommandSetting(player);
+        if (setting == null) {
+            setting = new CommandSetting(player, this.getCommandIdentifier(), false);
+        }
 
-        if (this.playerCommandSettingsDam.setEnabled(player, player.getWorld(), COMMAND_TYPE, !isEnabled)) {
-            player.sendMessage(Text.of("Tool automation has been turned " + setting + "."));
+        if (setting.isEnabled()) {
+
+            setting.setEnabled(false);
+            this.saveCommandSetting(player, setting);
+            player.sendMessage(Text.of(TextColors.GOLD, "Automatic tool switching has been disabled."));
+
         } else {
-            return CommandResult.empty();
+
+            setting.setEnabled(true);
+            this.saveCommandSetting(player, setting);
+            player.sendMessage(Text.of(TextColors.GREEN, "Automatic tool switching has been enabled."));
+
         }
 
         return CommandResult.success();
 
-    }
-
-    public ToolCommand(Automator plugin) {
-        this.playerCommandSettingsDam = new PlayerCommandSettingsDam(plugin);
     }
 
 }

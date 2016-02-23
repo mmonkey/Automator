@@ -20,7 +20,8 @@ public abstract class CommandAbstract implements CommandExecutor {
     protected CommandSetting getCommandSetting(Player player) {
         ArrayList<CommandSetting> settings = plugin.getPlayerSettings(player);
         for (CommandSetting setting : settings) {
-            if (setting.getCommand().equals(this.getCommandIdentifier())) {
+            if (setting.getCommand().equals(this.getCommandIdentifier())
+                    && setting.getWorldUniqueId().equals(player.getWorld().getUniqueId())) {
                 return setting;
             }
         }
@@ -32,7 +33,7 @@ public abstract class CommandAbstract implements CommandExecutor {
 
         ArrayList<CommandSetting> settings = plugin.getPlayerSettings(player);
         CommandSetting current = this.getCommandSetting(player);
-        if (current == null) {
+        if (current != null) {
             settings.remove(current);
         }
 

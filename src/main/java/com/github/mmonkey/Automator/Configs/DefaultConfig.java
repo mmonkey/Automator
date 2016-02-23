@@ -47,6 +47,7 @@ public class DefaultConfig extends Config {
 
         get().getNode(CONFIG_VERSION).setValue(0);
         get().getNode(COMMANDS, "tool").setValue(true);
+        get().getNode(COMMANDS, "torch").setValue(true);
         save();
 
     }

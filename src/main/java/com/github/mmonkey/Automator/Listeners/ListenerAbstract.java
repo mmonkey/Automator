@@ -17,7 +17,8 @@ public abstract class ListenerAbstract {
     protected CommandSetting getCommandSettings(Player player, String command) {
         ArrayList<CommandSetting> settings = plugin.getPlayerSettings(player);
         for (CommandSetting setting : settings) {
-            if (setting.getCommand().equals(command)) {
+            if (setting.getCommand().equals(command)
+                    && setting.getWorldUniqueId().equals(player.getWorld().getUniqueId())) {
                 return setting;
             }
         }

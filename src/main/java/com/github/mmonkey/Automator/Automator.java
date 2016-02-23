@@ -2,6 +2,7 @@ package com.github.mmonkey.Automator;
 
 import com.github.mmonkey.Automator.Commands.AutoCommand;
 import com.github.mmonkey.Automator.Commands.ToolCommand;
+import com.github.mmonkey.Automator.Commands.TorchCommand;
 import com.github.mmonkey.Automator.Configs.DefaultConfig;
 import com.github.mmonkey.Automator.Listeners.InteractBlockListener;
 import com.github.mmonkey.Automator.Migrations.ConfigMigrationRunner;
@@ -132,7 +133,7 @@ public class Automator {
         HashMap<List<String>, CommandSpec> subcommands = new HashMap<>();
 
         /**
-         * /tool
+         * /auto tool
          */
         if (this.getDefaultConfig().get().getNode(DefaultConfig.COMMANDS, "tool").getBoolean()) {
             subcommands.put(Collections.singletonList("tool"), CommandSpec.builder()
@@ -140,6 +141,18 @@ public class Automator {
                     .description(Text.of("Enable/disable tool swapping"))
                     .extendedDescription(Text.of("Enable or disable automatic tool swapping."))
                     .executor(new ToolCommand(this))
+                    .build());
+        }
+
+        /**
+         * /auto torch
+         */
+        if (this.getDefaultConfig().get().getNode(DefaultConfig.COMMANDS, "torch").getBoolean()) {
+            subcommands.put(Collections.singletonList("torch"), CommandSpec.builder()
+                    .permission("auto.torch")
+                    .description(Text.of("Enable/disable torch swapping"))
+                    .extendedDescription(Text.of("Enable or disable automatic torch swapping."))
+                    .executor(new TorchCommand(this))
                     .build());
         }
 

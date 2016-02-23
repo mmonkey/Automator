@@ -3,20 +3,25 @@ package com.github.mmonkey.Automator.Listeners;
 import com.github.mmonkey.Automator.Automator;
 import com.github.mmonkey.Automator.DefaultToolMapping;
 import com.github.mmonkey.Automator.Models.CommandSetting;
-import com.github.mmonkey.Automator.Services.ExchangeSlotItemsService;
+import com.github.mmonkey.Automator.Services.ExchangeHotbarItemWithGridItemService;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.data.property.BooleanProperty;
+import org.spongepowered.api.data.property.block.SolidCubeProperty;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.Slot;
 import org.spongepowered.api.item.inventory.entity.Hotbar;
 import org.spongepowered.api.item.inventory.type.GridInventory;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 import java.util.Optional;
 
@@ -89,7 +94,7 @@ public class InteractBlockListener extends ListenerAbstract {
                 for (ItemType tool : defaultMappings) {
                     if (slot.contains(tool)) {
 
-                        new ExchangeSlotItemsService(selectedHotbarSlot, slot).process();
+                        new ExchangeHotbarItemWithGridItemService(selectedHotbarSlot, slot, grid).process();
                         return;
 
                     }
@@ -97,6 +102,86 @@ public class InteractBlockListener extends ListenerAbstract {
             }
         }
 
+    }
+
+    @Listener
+    public void onSecondaryClickBlock(InteractBlockEvent.Secondary event) {
+
+        Optional<Player> optionalPlayer = event.getCause().first(Player.class);
+
+        if (!optionalPlayer.isPresent()) {
+            return;
+        }
+
+        Player player = optionalPlayer.get();
+        CommandSetting setting = this.getCommandSettings(player, "torch");
+
+        if (setting == null || !setting.isEnabled()) {
+            return;
+        }
+
+        Optional<GameMode> gameMode = player.getGameModeData().get(Keys.GAME_MODE);
+
+        if (gameMode.isPresent() && (gameMode.get()).equals(GameModes.CREATIVE)) {
+            return;
+        }
+
+        Optional<ItemStack> itemInHand = player.getItemInHand();
+
+        // Torch is already in hand
+        if (itemInHand.isPresent() && itemInHand.get().getItem() == ItemTypes.TORCH) {
+            return;
+        }
+
+        BlockSnapshot blockSnapshot = event.getTargetBlock();
+        Location<World> block = blockSnapshot.getLocation().isPresent() ? blockSnapshot.getLocation().get() : null;
+
+        if (block == null) {
+            return;
+        }
+
+        Optional<SolidCubeProperty> solidProperty = block.getProperty(SolidCubeProperty.class);
+
+        // No solid property, definitely not solid block
+        if (!solidProperty.isPresent()) {
+            return;
+        }
+
+        // Confirmed not solid
+        SolidCubeProperty isSolid = solidProperty.get();
+        if (isSolid.getValue() == null || !isSolid.getValue()) {
+            return;
+        }
+
+        Slot selectedHotbarSlot = null;
+        Inventory hotbarInventory = player.getInventory().query(Hotbar.class);
+        if (hotbarInventory instanceof Hotbar) {
+            Hotbar hotbar = (Hotbar) hotbarInventory;
+            selectedHotbarSlot = getSelectedHotbarSlot(hotbar);
+
+            // If there are torches already in the hotbar, set selected index to the torches slot index
+            ItemType[] torch = {ItemTypes.TORCH};
+            int compatibleIndex = getCompatibleToolHotbarIndex(hotbar, torch);
+            if (compatibleIndex >= 0 && compatibleIndex <= 8) {
+                hotbar.setSelectedSlotIndex(compatibleIndex);
+                return;
+            }
+
+        }
+
+        // Search the players grid inventory
+        Inventory grid = player.getInventory().query(GridInventory.class);
+        if (grid instanceof GridInventory) {
+            Iterable<Slot> gridSlots = grid.slots();
+            for (Slot slot : gridSlots) {
+                if (slot.contains(ItemTypes.TORCH)) {
+
+                    new ExchangeHotbarItemWithGridItemService(selectedHotbarSlot, slot, grid).process();
+                    return;
+
+                }
+            }
+        }
     }
 
     /**
@@ -142,45 +227,6 @@ public class InteractBlockListener extends ListenerAbstract {
         }
 
         return -1;
-
-    }
-
-    private void swapItemInHand(Player player, Slot activeSlot, Slot toolSlot) {
-
-        ItemStack itemInHand = player.getItemInHand().isPresent() ? player.getItemInHand().get() : null;
-        ItemStack itemInSlot = toolSlot.peek().isPresent() ? toolSlot.poll().get() : null;
-
-        if (activeSlot != null) {
-            activeSlot.clear();
-        }
-
-        if (itemInSlot != null) {
-            toolSlot.clear();
-            player.setItemInHand(itemInSlot);
-        }
-
-        if (itemInHand != null) {
-            toolSlot.offer(itemInHand);
-        }
-    }
-
-    private void swapSlotItems(Slot slotA, Slot slotB) {
-
-        ItemStack itemA = slotA.peek().isPresent() ? slotA.poll().get() : null;
-        ItemStack itemB = slotB.peek().isPresent() ? slotB.poll().get() : null;
-
-        if (itemA != null) {
-            slotA.clear();
-        }
-
-        if (itemB != null) {
-            slotB.clear();
-            slotA.offer(itemB);
-        }
-
-        if (itemA != null) {
-            slotB.offer(itemA);
-        }
 
     }
 

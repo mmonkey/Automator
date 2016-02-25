@@ -1,12 +1,12 @@
 package com.github.mmonkey.Automator.Listeners;
 
 import com.github.mmonkey.Automator.Automator;
-import com.github.mmonkey.Automator.DefaultToolMapping;
+import com.github.mmonkey.Automator.Models.BlockItemMapping;
 import com.github.mmonkey.Automator.Models.CommandSetting;
 import com.github.mmonkey.Automator.Services.ExchangeHotbarItemWithGridItemService;
 import org.spongepowered.api.block.BlockSnapshot;
+import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.data.property.BooleanProperty;
 import org.spongepowered.api.data.property.block.SolidCubeProperty;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
@@ -23,6 +23,8 @@ import org.spongepowered.api.item.inventory.type.GridInventory;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 public class InteractBlockListener extends ListenerAbstract {
@@ -55,17 +57,17 @@ public class InteractBlockListener extends ListenerAbstract {
 
         Optional<ItemStack> itemInHand = player.getItemInHand();
         BlockSnapshot blockSnapshot = event.getTargetBlock();
-        ItemType[] defaultMappings = DefaultToolMapping.getBlockToolDefaults(blockSnapshot.getState().getType());
+        BlockItemMapping mapping = getBlockItemMapping(blockSnapshot.getState().getType());
 
-        // No tool found for this block
-        if (defaultMappings == null) {
+        // No mapping found for this BlockType
+        if (mapping == null) {
             return;
         }
 
         // Compatible tool is already in hand
         if (itemInHand.isPresent()) {
-            for (ItemType tool : defaultMappings) {
-                if (itemInHand.get().getItem() == tool) {
+            for (ItemType item : mapping.getItems()) {
+                if (itemInHand.get().getItem() == item) {
                     return;
                 }
             }
@@ -78,7 +80,7 @@ public class InteractBlockListener extends ListenerAbstract {
             selectedHotbarSlot = getSelectedHotbarSlot(hotbar);
 
             // If there is a compatible tool already in the hotbar, set selected index to that item's slot index
-            int compatibleIndex = getCompatibleToolHotbarIndex(hotbar, defaultMappings);
+            int compatibleIndex = getCompatibleToolHotbarIndex(hotbar, mapping.getItems());
             if (compatibleIndex >= 0 && compatibleIndex <= 8) {
                 hotbar.setSelectedSlotIndex(compatibleIndex);
                 return;
@@ -91,8 +93,8 @@ public class InteractBlockListener extends ListenerAbstract {
         if (grid instanceof GridInventory) {
             Iterable<Slot> gridSlots = grid.slots();
             for (Slot slot : gridSlots) {
-                for (ItemType tool : defaultMappings) {
-                    if (slot.contains(tool)) {
+                for (ItemType item : mapping.getItems()) {
+                    if (slot.contains(item)) {
 
                         new ExchangeHotbarItemWithGridItemService(selectedHotbarSlot, slot, grid).process();
                         return;
@@ -160,8 +162,7 @@ public class InteractBlockListener extends ListenerAbstract {
             selectedHotbarSlot = getSelectedHotbarSlot(hotbar);
 
             // If there are torches already in the hotbar, set selected index to the torches slot index
-            ItemType[] torch = {ItemTypes.TORCH};
-            int compatibleIndex = getCompatibleToolHotbarIndex(hotbar, torch);
+            int compatibleIndex = getCompatibleToolHotbarIndex(hotbar, Collections.singletonList(ItemTypes.TORCH));
             if (compatibleIndex >= 0 && compatibleIndex <= 8) {
                 hotbar.setSelectedSlotIndex(compatibleIndex);
                 return;
@@ -210,15 +211,15 @@ public class InteractBlockListener extends ListenerAbstract {
      * Returns the index of the first tool matching the tools array in the Hotbar;
      *
      * @param hotbar Hotbar
-     * @param tools  ItemType[]
+     * @param items  List<ItemType>
      * @return int
      */
-    private int getCompatibleToolHotbarIndex(Hotbar hotbar, ItemType[] tools) {
+    private int getCompatibleToolHotbarIndex(Hotbar hotbar, List<ItemType> items) {
 
         int index = 0;
         Iterable<Slot> hotbarSlots = hotbar.slots();
         for (Slot slot : hotbarSlots) {
-            for (ItemType tool : tools) {
+            for (ItemType tool : items) {
                 if (slot.contains(tool)) {
                     return index;
                 }
@@ -228,6 +229,23 @@ public class InteractBlockListener extends ListenerAbstract {
 
         return -1;
 
+    }
+
+    /**
+     * Get the first mapping for this block
+     *
+     * @param block BlockType
+     * @return BlockItemMapping|null
+     */
+    private BlockItemMapping getBlockItemMapping(BlockType block) {
+        List<BlockItemMapping> blockItemMappings = plugin.getMappingsConfig().getBlockItemMappings();
+        for (BlockItemMapping mapping : blockItemMappings) {
+            if (mapping.getBlocks().contains(block)) {
+                return mapping;
+            }
+        }
+
+        return null;
     }
 
 }

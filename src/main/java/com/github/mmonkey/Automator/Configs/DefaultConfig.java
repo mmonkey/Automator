@@ -11,6 +11,12 @@ public class DefaultConfig extends Config {
     public static final String CONFIG_VERSION = "version";
     public static final String COMMANDS = "Commands";
 
+    public DefaultConfig(File configDir) {
+        super(configDir);
+
+        setConfigFile(new File(configDir, Automator.NAME + ".conf"));
+    }
+
     @Override
     public void load() {
 
@@ -50,12 +56,6 @@ public class DefaultConfig extends Config {
         get().getNode(COMMANDS, "torch").setValue(true);
         save();
 
-    }
-
-    public DefaultConfig(File configDir) {
-        super(configDir);
-
-        setConfigFile(new File(configDir, Automator.NAME + ".conf"));
     }
 
 }

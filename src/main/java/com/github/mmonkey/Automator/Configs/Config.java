@@ -18,6 +18,9 @@ public class Config {
     private ConfigurationLoader<CommentedConfigurationNode> configLoader;
     private CommentedConfigurationNode config;
 
+    public Config(File configDir) {
+        this.configDir = configDir;
+    }
 
     public File getConfigDir() {
         return this.configDir;
@@ -92,10 +95,6 @@ public class Config {
 
         return list;
 
-    }
-
-    public Config(File configDir) {
-        this.configDir = configDir;
     }
 
 }

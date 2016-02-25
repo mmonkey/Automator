@@ -4,6 +4,7 @@ import com.github.mmonkey.Automator.Commands.AutoCommand;
 import com.github.mmonkey.Automator.Commands.ToolCommand;
 import com.github.mmonkey.Automator.Commands.TorchCommand;
 import com.github.mmonkey.Automator.Configs.DefaultConfig;
+import com.github.mmonkey.Automator.Configs.MappingsConfig;
 import com.github.mmonkey.Automator.Listeners.InteractBlockListener;
 import com.github.mmonkey.Automator.Migrations.ConfigMigrationRunner;
 import com.github.mmonkey.Automator.Models.CommandSetting;
@@ -44,6 +45,7 @@ public class Automator {
     private File configDir;
 
     private DefaultConfig defaultConfig;
+    private MappingsConfig mappingsConfig;
     private HashMap<UUID, ArrayList<CommandSetting>> settings = new HashMap<>();
 
     /**
@@ -72,6 +74,13 @@ public class Automator {
      */
     public DefaultConfig getDefaultConfig() {
         return this.defaultConfig;
+    }
+
+    /**
+     * @return MappingsConfig
+     */
+    public MappingsConfig getMappingsConfig() {
+        return this.mappingsConfig;
     }
 
     /**
@@ -117,6 +126,10 @@ public class Automator {
         this.defaultConfig = new DefaultConfig(this.configDir);
         this.defaultConfig.load();
 
+        // Load mappings config
+        this.mappingsConfig = new MappingsConfig(this, this.configDir);
+        this.mappingsConfig.load();
+
         // Run config migrations
         int configVersion = this.defaultConfig.get().getNode(DefaultConfig.CONFIG_VERSION).getInt(0);
         ConfigMigrationRunner configMigrationRunner = new ConfigMigrationRunner(this, configVersion);
@@ -125,9 +138,6 @@ public class Automator {
 
     @Listener
     public void onInit(GameInitializationEvent event) {
-
-        // Register Events
-        DefaultToolMapping.initialize();
 
         game.getEventManager().registerListeners(this, new InteractBlockListener(this));
         HashMap<List<String>, CommandSpec> subcommands = new HashMap<>();

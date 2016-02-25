@@ -19,17 +19,20 @@ import java.util.stream.Collectors;
 public class MappingsConfig extends Config {
 
     public static final String BLOCK_ITEM_MAPPINGS = "block-item-mappings";
+    public static final String TORCH_ITEMS = "torch-items";
     public static final String BLOCKS = "blocks";
     public static final String ITEMS = "items";
 
     private Automator plugin;
     private List<BlockItemMapping> blockItemMappings;
+    private List<ItemType> torchItems;
 
     public MappingsConfig(Automator plugin, File configDir) {
         super(configDir);
 
         this.plugin = plugin;
         this.blockItemMappings = new ArrayList<>();
+        this.torchItems = new ArrayList<>();
         setConfigFile(new File(configDir, "mappings.conf"));
     }
 
@@ -67,8 +70,8 @@ public class MappingsConfig extends Config {
 
         }
 
+        // Save default block-item-mappings
         List<BlockItemMapping> blockItemMappings = Mappings.getDefaultItemBlockMappings();
-
         blockItemMappings.forEach((mapping) -> {
             if (!mapping.getName().isEmpty()) {
                 CommentedConfigurationNode node = get().getNode(BLOCK_ITEM_MAPPINGS, mapping.getName());
@@ -76,12 +79,18 @@ public class MappingsConfig extends Config {
                 node.getNode(BLOCKS).setValue(mapping.getBlockNamesList());
             }
         });
+
+        // Save default torch-items
+        List<String> torchItems = Mappings.getDefaultTorchItems();
+        get().getNode(TORCH_ITEMS).setComment("Switch to torches, if available, when a player right-clicks on a solid block, and one of these items are currently in hand.");
+        get().getNode(TORCH_ITEMS).setValue(torchItems);
+
         save();
 
     }
 
     /**
-     * Get a List of ItemBlockMappings from the mappings config
+     * Get a list of BlockItemMapping from the mappings config for block-item-mappings.
      *
      * @return List<BlockItemMapping>
      */
@@ -131,6 +140,34 @@ public class MappingsConfig extends Config {
 
         this.blockItemMappings = mappings;
         return mappings;
+    }
+
+    /**
+     * Get a list of ItemType from the mappings config for torch-items.
+     *
+     * @return List<ItemType>
+     */
+    public List<ItemType> getTorchItems() {
+
+        if (!this.torchItems.isEmpty()) {
+            return this.torchItems;
+        }
+
+        Collection<ItemType> itemTypes = plugin.getGame().getRegistry().getAllOf(ItemType.class);
+
+        List<ItemType> torchItems = new ArrayList<>();
+        List<String> itemNames = get().getNode(TORCH_ITEMS).getChildrenList().stream()
+                .map(ConfigurationNode::getString).collect(Collectors.toList());
+        itemNames.forEach((name) -> {
+            itemTypes.forEach((type) -> {
+                if (type.getName().equals(name)) {
+                    torchItems.add(type);
+                }
+            });
+        });
+
+        this.torchItems = torchItems;
+        return torchItems;
     }
 
 }

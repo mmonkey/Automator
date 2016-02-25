@@ -135,6 +135,12 @@ public class InteractBlockListener extends ListenerAbstract {
             return;
         }
 
+        // Only switch if there is a configured item in hand
+        List<ItemType> torchItems = plugin.getMappingsConfig().getTorchItems();
+        if (itemInHand.isPresent() && !torchItems.contains(itemInHand.get().getItem())) {
+            return;
+        }
+
         BlockSnapshot blockSnapshot = event.getTargetBlock();
         Location<World> block = blockSnapshot.getLocation().isPresent() ? blockSnapshot.getLocation().get() : null;
 

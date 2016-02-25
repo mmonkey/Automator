@@ -2,12 +2,14 @@ package com.github.mmonkey.Automator.Helpers;
 
 import com.github.mmonkey.Automator.Models.BlockItemMapping;
 import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Mappings {
 
@@ -250,6 +252,35 @@ public class Mappings {
         defaultMappings.add(shovels);
 
         return defaultMappings;
+    }
+
+    /**
+     * Get the default items that trigger a torch switch
+     *
+     * @return List<String>
+     */
+    public static List<String> getDefaultTorchItems() {
+
+        List<ItemType> torchItems = Arrays.asList(
+                ItemTypes.WOODEN_AXE,
+                ItemTypes.STONE_AXE,
+                ItemTypes.IRON_AXE,
+                ItemTypes.GOLDEN_AXE,
+                ItemTypes.DIAMOND_AXE,
+                ItemTypes.WOODEN_PICKAXE,
+                ItemTypes.STONE_PICKAXE,
+                ItemTypes.IRON_PICKAXE,
+                ItemTypes.GOLDEN_PICKAXE,
+                ItemTypes.DIAMOND_PICKAXE,
+                ItemTypes.SHEARS,
+                ItemTypes.WOODEN_SHOVEL,
+                ItemTypes.STONE_SHOVEL,
+                ItemTypes.IRON_SHOVEL,
+                ItemTypes.GOLDEN_SHOVEL,
+                ItemTypes.DIAMOND_SHOVEL
+        );
+
+        return torchItems.stream().map(ItemType::getName).collect(Collectors.toList());
     }
 
 }

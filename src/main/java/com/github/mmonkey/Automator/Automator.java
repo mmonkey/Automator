@@ -1,6 +1,7 @@
 package com.github.mmonkey.Automator;
 
 import com.github.mmonkey.Automator.Commands.AutoCommand;
+import com.github.mmonkey.Automator.Commands.RefillCommand;
 import com.github.mmonkey.Automator.Commands.ToolCommand;
 import com.github.mmonkey.Automator.Commands.TorchCommand;
 import com.github.mmonkey.Automator.Configs.DefaultConfig;
@@ -143,6 +144,18 @@ public class Automator {
         HashMap<List<String>, CommandSpec> subcommands = new HashMap<>();
 
         /**
+         * /auto refill
+         */
+        if (this.getDefaultConfig().get().getNode(DefaultConfig.COMMANDS, "refill").getBoolean()) {
+            subcommands.put(Collections.singletonList("refill"), CommandSpec.builder()
+                    .permission("auto.refill")
+                    .description(Text.of("Enable/disable auto refill"))
+                    .extendedDescription(Text.of("Enable or disable automatic item refilling."))
+                    .executor(new RefillCommand(this))
+                    .build());
+        }
+
+        /**
          * /auto tool
          */
         if (this.getDefaultConfig().get().getNode(DefaultConfig.COMMANDS, "tool").getBoolean()) {
@@ -170,8 +183,8 @@ public class Automator {
          * /auto
          */
         CommandSpec autoCommand = CommandSpec.builder()
-                .description(Text.of("Relay edit, carriers, account, send"))
-                .extendedDescription(Text.of("Manage your relay account or send an email or sms message."))
+                .description(Text.of("/auto commands list"))
+                .extendedDescription(Text.of("Shows which commands are available for Automator."))
                 .executor(new AutoCommand())
                 .children(subcommands)
                 .build();

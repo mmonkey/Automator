@@ -36,21 +36,22 @@ public class InteractBlockListener extends ListenerAbstract {
     @Listener
     public void onPrimaryClickBlock(InteractBlockEvent.Primary event) {
 
+        // Only works for players
         Optional<Player> optionalPlayer = event.getCause().first(Player.class);
-
         if (!optionalPlayer.isPresent()) {
             return;
         }
 
         Player player = optionalPlayer.get();
-        CommandSetting setting = this.getCommandSettings(player, "tool");
 
+        // Only works if player has the setting enabled
+        CommandSetting setting = this.getCommandSettings(player, "tool");
         if (setting == null || !setting.isEnabled()) {
             return;
         }
 
+        // Doesn't work in creative mode
         Optional<GameMode> gameMode = player.getGameModeData().get(Keys.GAME_MODE);
-
         if (gameMode.isPresent() && (gameMode.get()).equals(GameModes.CREATIVE)) {
             return;
         }
@@ -59,7 +60,7 @@ public class InteractBlockListener extends ListenerAbstract {
         BlockSnapshot blockSnapshot = event.getTargetBlock();
         BlockItemMapping mapping = getBlockItemMapping(blockSnapshot.getState().getType());
 
-        // No mapping found for this BlockType
+        // No mapping set up for this block
         if (mapping == null) {
             return;
         }
@@ -73,6 +74,7 @@ public class InteractBlockListener extends ListenerAbstract {
             }
         }
 
+        // Search the player's hotbar inventory
         Slot selectedHotbarSlot = null;
         Inventory hotbarInventory = player.getInventory().query(Hotbar.class);
         if (hotbarInventory instanceof Hotbar) {
@@ -88,7 +90,7 @@ public class InteractBlockListener extends ListenerAbstract {
 
         }
 
-        // Search the players grid inventory
+        // Search the player's grid inventory
         Inventory grid = player.getInventory().query(GridInventory.class);
         if (grid instanceof GridInventory) {
             Iterable<Slot> gridSlots = grid.slots();
@@ -246,74 +248,6 @@ public class InteractBlockListener extends ListenerAbstract {
 
         }
 
-    }
-
-    /**
-     * Return's the Slot of the selected slot index
-     *
-     * @param hotbar Hotbar
-     * @return Slot
-     */
-    private Slot getSelectedHotbarSlot(Hotbar hotbar) {
-
-        int index = 0;
-        int activeIndex = hotbar.getSelectedSlotIndex();
-        Iterable<Slot> hotbarSlots = hotbar.slots();
-        for (Slot slot : hotbarSlots) {
-            if (index == activeIndex) {
-                return slot;
-            }
-            index++;
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the index of the first tool matching the tools array in the Hotbar.
-     * Returns -1 if no matching item was found.
-     *
-     * @param hotbar Hotbar
-     * @param items  List<ItemType>
-     * @return int
-     */
-    private int getCompatibleToolHotbarIndex(Hotbar hotbar, List<ItemType> items) {
-
-        int index = 0;
-        Iterable<Slot> hotbarSlots = hotbar.slots();
-        for (Slot slot : hotbarSlots) {
-            for (ItemType tool : items) {
-                if (slot.contains(tool)) {
-                    return index;
-                }
-            }
-            index++;
-        }
-
-        return -1;
-    }
-
-    /**
-     * Returns the first index of the matching item in the Hotbar (not including the active item in hand).
-     * Returns -1 if no matching item was found.
-     *
-     * @param hotbar   Hotbar
-     * @param itemType ItemStack
-     * @return int
-     */
-    private int getCompatibleNotSelectedHotbarIndex(Hotbar hotbar, ItemType itemType) {
-
-        int index = 0;
-        int activeSlot = hotbar.getSelectedSlotIndex();
-        Iterable<Slot> hotbarSlots = hotbar.slots();
-        for (Slot slot : hotbarSlots) {
-            if (index != activeSlot && slot.contains(itemType)) {
-                return index;
-            }
-            index++;
-        }
-
-        return -1;
     }
 
     /**

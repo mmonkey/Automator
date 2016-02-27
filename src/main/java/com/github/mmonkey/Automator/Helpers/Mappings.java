@@ -1,7 +1,9 @@
 package com.github.mmonkey.Automator.Helpers;
 
 import com.github.mmonkey.Automator.Models.BlockItemMapping;
+import com.github.mmonkey.Automator.Models.EntityItemMapping;
 import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 
@@ -18,7 +20,7 @@ public class Mappings {
      *
      * @return List<BlockItemMapping>
      */
-    public static List<BlockItemMapping> getDefaultItemBlockMappings() {
+    public static List<BlockItemMapping> getDefaultBlockItemMappings() {
 
         List<BlockItemMapping> defaultMappings = new ArrayList<>();
 
@@ -250,6 +252,54 @@ public class Mappings {
         defaultMappings.add(diamondPickaxes);
         defaultMappings.add(shears);
         defaultMappings.add(shovels);
+
+        return defaultMappings;
+    }
+
+    /**
+     * Get the default entity to item mappings
+     *
+     * @return List<EntityItemMapping>
+     */
+    public static List<EntityItemMapping> getDefaultEntityItemMappings() {
+
+        List<EntityItemMapping> defaultMappings = new ArrayList<>();
+
+        EntityItemMapping swords = new EntityItemMapping("swords");
+        swords.setInteractionType(EntityItemMapping.INTERACTION_TYPE_PRIMARY);
+        swords.setEntities(
+                Arrays.asList(
+                        EntityTypes.BLAZE,
+                        EntityTypes.CAVE_SPIDER,
+                        EntityTypes.CREEPER,
+                        EntityTypes.ENDER_DRAGON,
+                        EntityTypes.ENDERMAN,
+                        EntityTypes.ENDERMITE,
+                        EntityTypes.GHAST,
+                        EntityTypes.GIANT,
+                        EntityTypes.GUARDIAN,
+                        EntityTypes.MAGMA_CUBE,
+                        EntityTypes.PIG_ZOMBIE,
+                        EntityTypes.SILVERFISH,
+                        EntityTypes.SKELETON,
+                        EntityTypes.SLIME,
+                        EntityTypes.SPIDER,
+                        EntityTypes.WITCH,
+                        EntityTypes.WITHER,
+                        EntityTypes.ZOMBIE
+                )
+        );
+        swords.setItems(
+                Arrays.asList(
+                        ItemTypes.WOODEN_SWORD,
+                        ItemTypes.STONE_SWORD,
+                        ItemTypes.IRON_SWORD,
+                        ItemTypes.GOLDEN_SWORD,
+                        ItemTypes.DIAMOND_SWORD
+                )
+        );
+
+        defaultMappings.add(swords);
 
         return defaultMappings;
     }

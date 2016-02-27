@@ -7,6 +7,7 @@ import com.github.mmonkey.Automator.Commands.TorchCommand;
 import com.github.mmonkey.Automator.Configs.DefaultConfig;
 import com.github.mmonkey.Automator.Configs.MappingsConfig;
 import com.github.mmonkey.Automator.Listeners.InteractBlockListener;
+import com.github.mmonkey.Automator.Listeners.InteractEntityListener;
 import com.github.mmonkey.Automator.Migrations.ConfigMigrationRunner;
 import com.github.mmonkey.Automator.Models.CommandSetting;
 import com.google.inject.Inject;
@@ -140,7 +141,11 @@ public class Automator {
     @Listener
     public void onInit(GameInitializationEvent event) {
 
+        // Register event listeners
         game.getEventManager().registerListeners(this, new InteractBlockListener(this));
+        game.getEventManager().registerListeners(this, new InteractEntityListener(this));
+
+        // Register commands
         HashMap<List<String>, CommandSpec> subcommands = new HashMap<>();
 
         /**

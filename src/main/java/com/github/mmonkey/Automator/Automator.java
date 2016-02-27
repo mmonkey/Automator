@@ -182,13 +182,15 @@ public class Automator {
         /**
          * /auto
          */
-        CommandSpec autoCommand = CommandSpec.builder()
-                .description(Text.of("/auto commands list"))
-                .extendedDescription(Text.of("Shows which commands are available for Automator."))
-                .executor(new AutoCommand())
-                .children(subcommands)
-                .build();
-        game.getCommandManager().register(this, autoCommand, "auto");
+        if (!subcommands.isEmpty()) {
+            CommandSpec autoCommand = CommandSpec.builder()
+                    .description(Text.of("/auto commands list"))
+                    .extendedDescription(Text.of("Shows which commands are available for Automator."))
+                    .executor(new AutoCommand(this))
+                    .children(subcommands)
+                    .build();
+            game.getCommandManager().register(this, autoCommand, "auto");
+        }
 
     }
 

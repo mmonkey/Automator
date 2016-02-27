@@ -29,6 +29,19 @@ public abstract class CommandAbstract implements CommandExecutor {
         return null;
     }
 
+    protected CommandSetting getCommandSetting(Player player, String command) {
+        ArrayList<CommandSetting> settings = plugin.getPlayerSettings(player);
+        String identifier = command.isEmpty() ? this.getCommandIdentifier() : command;
+        for (CommandSetting setting : settings) {
+            if (setting.getCommand().equals(identifier)
+                    && setting.getWorldUniqueId().equals(player.getWorld().getUniqueId())) {
+                return setting;
+            }
+        }
+
+        return null;
+    }
+
     protected void saveCommandSetting(Player player, CommandSetting setting) {
 
         ArrayList<CommandSetting> settings = plugin.getPlayerSettings(player);

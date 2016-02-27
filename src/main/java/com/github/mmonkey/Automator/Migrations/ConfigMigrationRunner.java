@@ -7,9 +7,6 @@ public class ConfigMigrationRunner extends MigrationRunner {
     protected MigrationInterface getMigration(int version) {
 
         switch (version) {
-            case 0:
-//                return new M01_AddDatabaseSettings(plugin);
-
             default:
                 return null;
         }

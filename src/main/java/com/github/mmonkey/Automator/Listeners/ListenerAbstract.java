@@ -1,6 +1,7 @@
 package com.github.mmonkey.Automator.Listeners;
 
 import com.github.mmonkey.Automator.Automator;
+import com.github.mmonkey.Automator.Dams.CommandSettingDam;
 import com.github.mmonkey.Automator.Models.CommandSetting;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
@@ -13,16 +14,39 @@ import java.util.List;
 public abstract class ListenerAbstract {
 
     protected Automator plugin;
+    protected CommandSettingDam commandSettingDam;
 
     public ListenerAbstract(Automator plugin) {
         this.plugin = plugin;
+        this.commandSettingDam = new CommandSettingDam(plugin.getDatabase());
     }
 
+    /**
+     * Get this Player's CommandSettings List
+     *
+     * @param player Player
+     * @return CommandSetting
+     */
+    protected List<CommandSetting> loadCommandSettings(Player player) {
+        List<CommandSetting> settings = plugin.getPlayerSettings(player);
+        if (settings.isEmpty()) {
+            settings = commandSettingDam.getCommandSettings(player);
+            plugin.setPlayerSettings(player, settings);
+        }
+        return settings;
+    }
+
+    /**
+     * Get the Player's CommandSetting for this command
+     *
+     * @param player Player
+     * @param command String
+     * @return CommandSetting
+     */
     protected CommandSetting getCommandSettings(Player player, String command) {
-        ArrayList<CommandSetting> settings = plugin.getPlayerSettings(player);
+        List<CommandSetting> settings = this.loadCommandSettings(player);
         for (CommandSetting setting : settings) {
-            if (setting.getCommand().equals(command)
-                    && setting.getWorldUniqueId().equals(player.getWorld().getUniqueId())) {
+            if (setting.getCommand().equals(command)) {
                 return setting;
             }
         }

@@ -2,9 +2,10 @@ package com.github.mmonkey.Automator.Models;
 
 import org.spongepowered.api.entity.living.player.Player;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class CommandSetting {
+public class CommandSetting implements Serializable {
 
     private UUID playerUniqueId;
     private UUID worldUniqueId;

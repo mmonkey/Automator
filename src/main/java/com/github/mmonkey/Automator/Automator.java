@@ -6,11 +6,15 @@ import com.github.mmonkey.Automator.Commands.ToolCommand;
 import com.github.mmonkey.Automator.Commands.TorchCommand;
 import com.github.mmonkey.Automator.Configs.DefaultConfig;
 import com.github.mmonkey.Automator.Configs.MappingsConfig;
+import com.github.mmonkey.Automator.Database.DatabaseAbstract;
+import com.github.mmonkey.Automator.Database.H2EmbeddedDatabase;
 import com.github.mmonkey.Automator.Listeners.InteractBlockListener;
 import com.github.mmonkey.Automator.Listeners.InteractEntityListener;
 import com.github.mmonkey.Automator.Migrations.ConfigMigrationRunner;
+import com.github.mmonkey.Automator.Migrations.DatabaseMigrationRunner;
 import com.github.mmonkey.Automator.Models.CommandSetting;
 import com.google.inject.Inject;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.api.Game;
@@ -18,8 +22,10 @@ import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.game.state.GameAboutToStartServerEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
 
@@ -31,8 +37,9 @@ public class Automator {
 
     public static final String NAME = "Automator";
     public static final String ID = "Automator";
-    public static final String VERSION = "0.0.1-3.0.0";
+    public static final String VERSION = "1.0.0-3.0.0";
     public static final int CONFIG_VERSION = 0;
+    public static final int DATABASE_VERSION = 1;
 
     private static Automator instance;
 
@@ -48,7 +55,9 @@ public class Automator {
 
     private DefaultConfig defaultConfig;
     private MappingsConfig mappingsConfig;
-    private HashMap<UUID, ArrayList<CommandSetting>> settings = new HashMap<>();
+    private DatabaseAbstract database;
+    private boolean webServerRunning;
+    private HashMap<UUID, List<CommandSetting>> settings = new HashMap<>();
 
     /**
      * @return Automator
@@ -79,6 +88,13 @@ public class Automator {
     }
 
     /**
+     * @return DatabaseAbstract
+     */
+    public DatabaseAbstract getDatabase() {
+        return this.database;
+    }
+
+    /**
      * @return MappingsConfig
      */
     public MappingsConfig getMappingsConfig() {
@@ -91,23 +107,20 @@ public class Automator {
      * @param player Player
      * @return ArrayList<CommandSetting>
      */
-    public ArrayList<CommandSetting> getPlayerSettings(Player player) {
-
-        if (this.settings.containsKey(player.getUniqueId())) {
-            return settings.get(player.getUniqueId());
+    public List<CommandSetting> getPlayerSettings(Player player) {
+        if (!this.settings.containsKey(player.getUniqueId())) {
+            this.settings.put(player.getUniqueId(), new ArrayList<>());
         }
-        this.settings.put(player.getUniqueId(), new ArrayList<CommandSetting>());
-        return new ArrayList<CommandSetting>();
-
+        return this.settings.get(player.getUniqueId());
     }
 
     /**
      * Set all CommandSettings for a Player
      *
      * @param player   Player
-     * @param settings ArrayList<CommandSetting>
+     * @param settings List<CommandSetting>
      */
-    public void setPlayerSettings(Player player, ArrayList<CommandSetting> settings) {
+    public void setPlayerSettings(Player player, List<CommandSetting> settings) {
         this.settings.put(player.getUniqueId(), settings);
     }
 
@@ -133,9 +146,17 @@ public class Automator {
         this.mappingsConfig.load();
 
         // Run config migrations
-        int configVersion = this.defaultConfig.get().getNode(DefaultConfig.CONFIG_VERSION).getInt(0);
+        int configVersion = this.defaultConfig.get().getNode(DefaultConfig.VERSION).getInt(0);
         ConfigMigrationRunner configMigrationRunner = new ConfigMigrationRunner(this, configVersion);
         configMigrationRunner.run();
+
+        // Setup the database connection
+        this.setupDatabase();
+
+        // Run database migrations
+        int databaseVersion = this.defaultConfig.get().getNode(DefaultConfig.DATABASE, DefaultConfig.VERSION).getInt(0);
+        DatabaseMigrationRunner databaseMigrationRunner = new DatabaseMigrationRunner(this, databaseVersion);
+        databaseMigrationRunner.run();
     }
 
     @Listener
@@ -196,6 +217,37 @@ public class Automator {
                     .build();
             game.getCommandManager().register(this, autoCommand, "auto");
         }
+
+    }
+
+    @Listener
+    public void onServerStart(GameAboutToStartServerEvent event) {
+        this.startWebServer();
+    }
+
+    @Listener
+    public void onServerStop(GameStoppingServerEvent event) {
+        if (this.database instanceof H2EmbeddedDatabase && this.webServerRunning) {
+            ((H2EmbeddedDatabase) this.database).stopWebServer();
+            this.webServerRunning = false;
+        }
+    }
+
+    private void startWebServer() {
+        CommentedConfigurationNode dbConfig = this.defaultConfig.get().getNode(DefaultConfig.DATABASE);
+        if (dbConfig.getNode(DefaultConfig.WEBSERVER).getBoolean()) {
+            if (this.database instanceof H2EmbeddedDatabase && !this.webServerRunning) {
+                if (((H2EmbeddedDatabase) this.database).startWebServer()) {
+                    this.webServerRunning = true;
+                }
+            }
+        }
+    }
+
+    private void setupDatabase() {
+
+        this.database = new H2EmbeddedDatabase(this.getGame(), NAME.toLowerCase(), "admin", "");
+        this.startWebServer();
 
     }
 

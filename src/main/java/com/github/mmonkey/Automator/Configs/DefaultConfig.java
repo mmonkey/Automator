@@ -8,8 +8,10 @@ import java.io.IOException;
 
 public class DefaultConfig extends Config {
 
-    public static final String CONFIG_VERSION = "version";
     public static final String COMMANDS = "Commands";
+    public static final String VERSION = "version";
+    public static final String DATABASE = "Database";
+    public static final String WEBSERVER = "webserver";
 
     public DefaultConfig(File configDir) {
         super(configDir);
@@ -51,7 +53,9 @@ public class DefaultConfig extends Config {
 
         }
 
-        get().getNode(CONFIG_VERSION).setValue(0);
+        get().getNode(VERSION).setValue(0);
+        get().getNode(DATABASE, VERSION).setValue(0);
+        get().getNode(DATABASE, WEBSERVER).setValue(false);
         get().getNode(COMMANDS, "refill").setValue(true);
         get().getNode(COMMANDS, "tool").setValue(true);
         get().getNode(COMMANDS, "torch").setValue(true);

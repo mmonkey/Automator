@@ -160,6 +160,7 @@ public class InteractBlockListener extends ListenerAbstract {
                         return;
                     }
 
+                    // Search the player's hotbar inventory
                     Slot selectedHotbarSlot = null;
                     Inventory hotbarInventory = player.getInventory().query(Hotbar.class);
                     if (hotbarInventory instanceof Hotbar) {
@@ -175,14 +176,17 @@ public class InteractBlockListener extends ListenerAbstract {
 
                     }
 
-                    // Search the players grid inventory
+                    // Search the player's grid inventory
                     Inventory grid = player.getInventory().query(GridInventory.class);
                     if (grid instanceof GridInventory) {
                         Iterable<Slot> gridSlots = grid.slots();
                         for (Slot slot : gridSlots) {
                             if (slot.contains(ItemTypes.TORCH)) {
 
-                                new ExchangeHotbarItemWithGridItemService(selectedHotbarSlot, slot, grid).process();
+                                final Slot selectedSlot = selectedHotbarSlot;
+                                plugin.getGame().getScheduler().createTaskBuilder().delayTicks(1).execute(() -> {
+                                    new ExchangeHotbarItemWithGridItemService(selectedSlot, slot, grid).process();
+                                }).submit(plugin);
                                 return;
 
                             }

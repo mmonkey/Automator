@@ -33,7 +33,7 @@ public class AutoCommand extends CommandAbstract {
         }
 
         Text.Builder commands = Text.builder();
-        commands.append(Text.of(TextColors.YELLOW, "=============== Automator Commands ==============="));
+        commands.append(Text.of(TextColors.YELLOW, "================= Automator Commands ================="));
 
         if (plugin.getDefaultConfig().get().getNode(DefaultConfig.COMMANDS, "refill").getBoolean()) {
             commands.append(Text.of(Text.NEW_LINE));
@@ -61,11 +61,12 @@ public class AutoCommand extends CommandAbstract {
             if (player != null) {
                 CommandSetting setting = this.getCommandSetting(player, "torch");
                 boolean enabled = (setting != null && setting.isEnabled());
-                commands.append(Text.of("Currently: ", enabled ? Text.of(TextColors.GREEN, "enabled") : Text.of(TextColors.RED, "disabled")));
+                commands.append(Text.of(" Currently: ", enabled ? Text.of(TextColors.GREEN, "enabled") : Text.of(TextColors.RED, "disabled")));
             }
         }
 
-        commands.append(Text.of(TextColors.YELLOW, "=================================================="));
+        commands.append(Text.NEW_LINE);
+        commands.append(Text.of(TextColors.YELLOW, "====================================================="));
         src.sendMessage(commands.build());
 
         return CommandResult.empty();

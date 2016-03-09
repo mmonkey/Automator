@@ -32,12 +32,13 @@ import org.spongepowered.api.text.Text;
 import java.io.File;
 import java.util.*;
 
-@Plugin(id = Automator.ID, name = Automator.NAME, version = Automator.VERSION)
+@Plugin(id = Automator.ID, name = Automator.NAME, version = Automator.VERSION, description = Automator.DESCRIPTION)
 public class Automator {
 
+    public static final String ID = "com.github.mmonkey.automator";
     public static final String NAME = "Automator";
-    public static final String ID = "Automator";
-    public static final String VERSION = "1.0.0-3.0.0";
+    public static final String VERSION = "1.1.0-4.1.0";
+    public static final String DESCRIPTION = "Automator makes simple tasks, like swapping tools, automatic.";
     public static final int CONFIG_VERSION = 0;
     public static final int DATABASE_VERSION = 1;
 

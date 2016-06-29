@@ -15,13 +15,13 @@ Automator is a [Sponge](https://www.spongepowered.org/) Minecraft plugin to auto
 
 ## Permissions
 
-"auto.refill"
-"auto.tool" 
-"auto.torch"
+* "auto.refill"
+* "auto.tool" 
+* "auto.torch"
 
 ## Default Item-Block Mappings
 
-**Minecraft Version 1.8.9**
+**Minecraft Version 1.8.9**  
 All vanilla minecraft items are setup by default.
 
 ## Custom Item-Block Mappings
